@@ -1,0 +1,9 @@
+{
+    "require": {
+        "slim/slim": "^3.12",
+        "illuminate/database": "^5.7"
+    },
+    "autoload": {
+        "psr-4": {"Chatter\\": "src/Chatter/"}
+    }
+}
