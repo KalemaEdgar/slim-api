@@ -33,4 +33,24 @@ $app->get('/messages', function($request, $response, $args) {
 
 });
 
+// Create a new message
+$app->post('/messages', function($request, $response, $args) {
+    $_message = $request->getParsedBodyParam('message', '');
+
+    $message = new Message;
+    $message->body = $_message;
+    $message->user_id = -1;
+    $message->save();
+
+    if ($message->id) {
+        $payload = [
+            'message_id' => $message->id,
+            'uri' => '/messages/' . $message->id
+        ];
+        return $response->withStatus(201)->withJson($payload);
+    } else {
+        return $response->withStatus(400);
+    }
+});
+
 $app->run();
