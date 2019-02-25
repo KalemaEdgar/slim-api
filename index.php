@@ -56,6 +56,46 @@ $app->post('/messages', function ($request, $response, $args) {
 
 });
 
+// Create a message with an uploaded file
+$app->post('/addMessageWithFileUpload', function ($request, $response, $args) { 
+
+    $_message = $request->getParsedBodyParam('message', '');
+    
+    $imagePath = '';
+    $files = $request->getUploadedFiles();
+    $newFile = $files['file'];
+
+    if ($newFile->getError() === UPLOAD_ERR_OK) {
+        $uploadFileName = $newFile->getClientFileName();
+        $newFile->moveTo('assets/images/' . $uploadFileName);
+        $imagePath = 'assets/images/' . $uploadFileName;
+    } else {
+        // Do something if the file upload fails
+    }
+
+    $message = new Message;
+    $message->body = $_message;
+    $message->user_id = -1;
+    $message->image_url = $imagePath;
+    $message->save();
+
+    if ($message->id) {
+        
+        $payload = [
+            'message_id' => $message->id,
+            'message_uri' => '/messages/' . $message->id
+        ];
+
+        return $response->withStatus(201)->withJson($payload);
+
+    } else {
+        
+        return $response->withStatus(400);
+
+    }
+
+});
+
 // Delete a message
 $app->delete('/messages/{message_id}', function ($request, $response, $args) {
     // Lookup the message
