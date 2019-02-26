@@ -1,7 +1,8 @@
 {
     "require": {
         "slim/slim": "^3.12",
-        "illuminate/database": "^5.7"
+        "illuminate/database": "^5.7",
+        "aws/aws-sdk-php": "^3.18"
     },
     "autoload": {
         "psr-4": {"Chatter\\": "src/Chatter/"}

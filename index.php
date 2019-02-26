@@ -6,8 +6,15 @@ include 'bootstrap.php';
 use Chatter\Models\Message;
 use Chatter\Middleware\Logging as ChatterLogging;
 use Chatter\Middleware\Authentication as ChatterAuth;
+use Chatter\Middleware\FileFilter;
+use Chatter\Middleware\ImageRemoveExif;
+use Chatter\Middleware\FileMove;
+
 
 $app = new \Slim\App();
+// Register the middleware. 
+// The middleware registered with ($app->add()) is added to the entire app and runs for all routes (Authentication, Logging)
+// You can specify the middleware to run only for a specific route by attaching it only to that route and not to $app
 $app->add(new ChatterAuth()); // When the authentication fails (incorrect token), this is throwing PHP errors, handle them
 $app->add(new ChatterLogging());
 
@@ -95,6 +102,32 @@ $app->post('/addMessageWithFileUpload', function ($request, $response, $args) {
     }
 
 });
+
+// Create a message while securely uploading a file
+$filter = new FileFilter();
+$removeExif = new ImageRemoveExif();
+$move = new FileMove();
+$app->post('/addMessageWithFileUploadAndSecure', function ($request, $response, $args) {
+
+    $_message = $request->getParsedBodyParam('message', '');
+
+    $imagePath = '';
+    $message = new Message;
+    $message->body = $_message;
+    $message->user_id = -1;
+    $message->image_url = $request->getAttribute('png_filename');
+    $message->save();
+
+    if ($message->id) {
+        $payload = [
+            'message_id' => $message->id,
+            'message_uri' => '/messages/' . $message->id
+        ];
+        return $response->withStatus(201)->withJson($payload);
+    } else {
+        return $response->withStatus(400);
+    }
+})->add($filter)->add($removeExif)->add($move);
 
 // Delete a message
 $app->delete('/messages/{message_id}', function ($request, $response, $args) {
