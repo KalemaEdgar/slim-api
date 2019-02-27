@@ -66,6 +66,7 @@ $app->delete('/messages/{message_id}', function ($request, $response, $args) {
     if ($message->exists) {
         return $response->withStatus(400);
     } else {
+        $payload = [];
         return $response->withStatus(204)->withJson($payload);
     }
 });
